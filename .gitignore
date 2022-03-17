@@ -125,3 +125,5 @@ staticfiles/
 *.bat
 env.ps1
 env.sh
+
+.idea/
