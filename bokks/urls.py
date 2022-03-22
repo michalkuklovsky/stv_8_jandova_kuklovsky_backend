@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from bokksapp.views import views
+from bokksapp.views import views, search, events, events_id
 
 urlpatterns = [
     path('', views.homepage),
-    path('books/<int:id>', views.bookIDShowcase)
+    path('books/<int:id>', views.bookIDShowcase),
+    path('search/', search.processRequest),
+    path('events/', events.processRequest),
+    path('events/<int:id>', events_id.processRequest)
 ]
 

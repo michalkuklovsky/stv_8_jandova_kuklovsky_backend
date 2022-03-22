@@ -6,17 +6,32 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from datetime import datetime
+
+
+class Users(models.Model):
+    email = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=255, blank=True, null=True)
+    is_admin = models.BooleanField()
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(default=datetime.now)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
 
 class Authors(models.Model):
     name = models.CharField(max_length=255)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(default=datetime.now)
     deleted_at = models.DateTimeField(blank=True, null=True)
 
-    class Meta:
-        managed = False
-        db_table = 'authors'
+
+class Genres(models.Model):
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(default=datetime.now)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
 
 class Books(models.Model):
@@ -27,67 +42,11 @@ class Books(models.Model):
     quantity = models.IntegerField()
     isbn = models.CharField(max_length=255)
     img_path = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(default=datetime.now)
     deleted_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'books'
-
-
-class BooksHasAuthors(models.Model):
-    book = models.OneToOneField(Books, models.DO_NOTHING, primary_key=True)
-    author = models.ForeignKey(Authors, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'books_has_authors'
-        unique_together = (('book', 'author'),)
-
-
-class BooksHasGenres(models.Model):
-    book = models.OneToOneField(Books, models.DO_NOTHING, primary_key=True)
-    genre = models.ForeignKey('Genres', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'books_has_genres'
-        unique_together = (('book', 'genre'),)
-
-
-class DjangoMigrations(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class Events(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=255)
-    img_path = models.CharField(max_length=255, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    user = models.ForeignKey('Users', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'events'
-
-
-class Genres(models.Model):
-    name = models.CharField(max_length=255)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
-    deleted_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'genres'
+    authors = models.ManyToManyField(Authors)
+    genres = models.ManyToManyField(Genres)
 
 
 class Orders(models.Model):
@@ -95,37 +54,18 @@ class Orders(models.Model):
     payment_type = models.CharField(max_length=255)
     shipping_type = models.CharField(max_length=255)
     status = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(default=datetime.now)
     deleted_at = models.DateTimeField(blank=True, null=True)
-    user = models.ForeignKey('Users', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'orders'
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    books = models.ManyToManyField(Books)
 
 
-class OrdersHasBooks(models.Model):
-    order = models.OneToOneField(Orders, models.DO_NOTHING, primary_key=True)
-    book = models.ForeignKey(Books, models.DO_NOTHING)
-    count = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'orders_has_books'
-        unique_together = (('order', 'book'),)
-
-
-class Users(models.Model):
-    email = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    phone_number = models.CharField(max_length=255, blank=True, null=True)
-    is_admin = models.BooleanField()
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+class Events(models.Model):
+    name = models.CharField(max_length=255)
+    img_path = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(default=datetime.now)
     deleted_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'users'
