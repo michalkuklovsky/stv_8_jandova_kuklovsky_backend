@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 
-# from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view
 from bokksapp.models import Books
 
 bookGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors__id', 'authors__name', 'genres__id', 'genres__name']
@@ -39,7 +39,7 @@ def delete_book(id):
     return [], 204
 
 
-# @api_view(['GET', 'DELETE', 'PUT'])
+@api_view(['GET', 'DELETE', 'PUT'])
 def process_request(request, id):
     if request.method == 'GET':
         response, http_status = get_book(id)

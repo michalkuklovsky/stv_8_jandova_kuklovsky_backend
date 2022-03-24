@@ -1,7 +1,8 @@
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
+from django.shortcuts import redirect
 
-# from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view
 from bokksapp.models import Books
 
 booksGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors__id', 'authors__name', 'genres__id', 'genres__name']
@@ -36,10 +37,17 @@ def serialize_object(parameters, page, paginator):
                 }
     return response
 
-# @api_view(['GET', 'POST'])
+
+def post_books():
+    return HttpResponse(status=200)
+
+
+@api_view(['GET', 'POST'])
 def process_request(request):
     if request.method == 'GET':
         response, http_status = get_books(request)
+    elif request.method == 'POST':
+        response, http_status = post_books()
     else:
         response = {'errors': {'message': 'Bad request'}}
         http_status = 400

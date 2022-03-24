@@ -18,14 +18,22 @@ from django.urls import path
 from bokksapp.views import views, search, genres, events, events_id, books, books_id
 
 urlpatterns = [
-    path('', views.homepage),
-
+    # HOME
+    path('', views.homepage, name='home'),
+    # SEARCH
     path('search/', search.processRequest),
-    path('events/', events.processRequest),
+    # EVENTS
+    path('events/', events.processRequest, name='events'),
     path('events/<int:id>', events_id.processRequest),
-
+    # GENRES
     path('genres/', genres.process_request),
+    # BOOKS
     path('books/', books.process_request),
     path('books/<int:id>', books_id.process_request),
+
+    # AUTH
+    # path('profile/<int:id>', )
+    # path('login/', )
+    # path('logout/', )
 ]
 

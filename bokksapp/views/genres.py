@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 
-# from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view
 from bokksapp.models import Books, Genres
 
 booksColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors__id', 'authors__name', 'genres__id', 'genres__name']
@@ -55,7 +55,7 @@ def serialize_object(parameters, page, paginator, items):
     return response
 
 
-# @api_view(['GET'])
+@api_view(['GET'])
 def process_request(request):
     if request.method == 'GET':
         genre = request.GET.get('query', None)

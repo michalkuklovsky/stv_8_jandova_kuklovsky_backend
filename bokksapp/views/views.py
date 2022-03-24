@@ -1,17 +1,13 @@
-# import imp
-# from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
+from rest_framework import status
 
-from bokksapp.models import Books
-# from bokksapp.models import Authors
-# from bokksapp.models import BooksHasAuthors
+from bokksapp.models import Books, Events
 
 
 def homepage(request):
-	html = "<html>" \
-			"<body>" \
-			"Homepage" \
-			"</body>" \
-			"</html>"
-	return HttpResponse(html)
+	if request.method == 'GET':
+		books = Books.objects.values().all()[:8]
+		events = Events.objects.values().all()[:4]
+		return JsonResponse({'books': list(books), 'events': list(events)}, status=status.HTTP_200_OK, safe=False)
+	return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
