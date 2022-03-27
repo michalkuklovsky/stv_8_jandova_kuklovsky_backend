@@ -14,6 +14,9 @@ def get_id(request, id):
     event = Events.objects.values(*eventsColumns).filter(id=id).first()
     if event is None:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
+        
+    # if event['deleted_at'] is not None:
+    #     return {'error': {'message': 'Zaznam neexistuje'}}, 404
 
     response = serialize_object('event', event)
     return response, 200

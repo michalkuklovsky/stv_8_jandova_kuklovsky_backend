@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from django.http import HttpResponse, JsonResponse
@@ -98,6 +99,8 @@ def check_post_body(new_item):
     if new_item['description'] is not None:
         if new_item['description'] == '':
             errors.append({'field': 'name', 'reasons': [reasons[1]]})
+
+    new_item['delete_at'] = datetime.now()
 
     response = dict(new_item)
 
