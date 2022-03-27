@@ -16,14 +16,9 @@ SECRET_KEY = os.environ.get('KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['147.175.160.154', '127.0.0.1', 'localhost']
-# ALLOWED_HOSTS = ['192.185.200.1']
-# ALLOWED_HOSTS = ['147.175.160.154']
-# ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['147.175.163.44', '127.0.0.1', '10.62.45.180', 'localhost']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
