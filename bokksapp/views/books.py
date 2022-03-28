@@ -45,6 +45,10 @@ def serialize_object(parameters, page, paginator):
 def post_book(request):
     post_data = JSONParser().parse(request)
 
+    # TO-DO:
+    # check post_data
+    # upload file and store ot locally
+
     # Find author
     author_names = post_data['authors'].split(', ')
     authors = list()
