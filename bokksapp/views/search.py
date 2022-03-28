@@ -3,6 +3,8 @@ import json
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, F, Max
+from rest_framework.decorators import api_view
+
 
 from bokksapp.models import Books
 from bokksapp.models import Authors
@@ -67,7 +69,7 @@ def check_and_set_parameters(query_parameters):
     return query_parameters
 
 def get_query(query_parameters):
-    books = Books.objects.values(*booksColumns).all()
+    books = Books.objects.values(*booksColumns).filter(deleted_at__isnull=True).all()
 
     if query_parameters['query'] is not None:                                                   # query
         books = books.filter(
@@ -111,6 +113,7 @@ def serialize_object(parameters, page, paginator):
                 }
     return response
 
+@api_view(['GET'])
 def processRequest(request):
     if request.method == 'GET':
         response, http_status = searchEvents(request)
