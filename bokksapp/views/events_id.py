@@ -32,7 +32,7 @@ def serialize_object(str, get):
 
 
 eventsPutColumns = ['name', 'description', 'img_path', 'deleted_at']
-reasons = ['required', 'null string not allowed', 'not number']
+reasons = ['required', 'null string not allowed', 'img_path provided but file is missing', 'image provided but img_path is missing']
 
 # PUT /events/{id} endpoint
 def put_id(request, id):
@@ -45,15 +45,19 @@ def put_id(request, id):
         http_status = 403
         return response, http_status
     
-    new_item = {}
-    new_item = json.loads(request.body)
+    new_item = parse_request(request)
+
+    if 'image' in request.FILES:
+        file = request.FILES['image']
+    else:
+        file = None
 
     if new_item == {}:
         response = {'errors': {'message': 'request body required'}}
         http_status = 422
         return response, http_status
 
-    errors, update = check_put_body(new_item)
+    errors, update = check_put_body(new_item, file)
     if errors:
         return {'errors': errors}, 422
 
@@ -65,11 +69,22 @@ def put_id(request, id):
 
     Events.objects.filter(id=id).update(**update)
 
+    if file is not None and new_item['img_path'] is not None:
+        handle_uploaded_file(file, new_item['img_path'])
+
     put = Events.objects.values(*eventsAdminColumns).filter(id=id).first()
     return serialize_object('event', put), 201
 
+def parse_request(request):
+    r = request.POST
+    return {
+        'name': r.get('name'),
+        'description': r.get('description'),
+        'img_path': r.get('img_path')
+    }
+
 # checks parameters in POST requst body and handles errors
-def check_put_body(new_item):
+def check_put_body(new_item, file):
     errors = []
     response = update = {}
 
@@ -84,7 +99,12 @@ def check_put_body(new_item):
     if new_item['img_path'] is not None:
         if new_item['img_path'] == '':
             errors.append({'field': 'img_path', 'reasons': [reasons[1]]})
+        else:
+            if file is None:
+                errors.append({'field': 'image', 'reasons': [reasons[2]]})
 
+    if file is not None and new_item['img_path'] is None:
+        errors.append({'field': 'image', 'reasons': [reasons[3]]})
 
     if new_item['description'] is not None:
         if new_item['description'] == '':
@@ -101,6 +121,11 @@ def check_put_body(new_item):
 
     return errors, update
 
+# https://docs.djangoproject.com/en/4.0/topics/http/file-uploads/
+def handle_uploaded_file(f, name):
+    with open(f'./bokksapp/resources/events/{name}', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
 
 # delete /events/{id} endpoint
 def delete_id(request, id):
