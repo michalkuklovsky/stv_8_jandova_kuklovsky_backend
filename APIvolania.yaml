@@ -1,0 +1,831 @@
+openapi: 3.0.3
+info:
+  title: Projekt MTAA 2022
+  description: Zoznam API endpointov k online kníhkupectvu BOKKS.
+  version: '1.0.1'
+servers:
+  - url: https://127.0.0.1
+    description: localhost
+tags:
+- name: "Home"
+- name: "Genres"
+- name: "Books"
+- name: "Events"
+- name: "Search"
+- name: "Auth"
+
+paths:
+  /:
+    get:
+      tags:
+        - "Home"
+      summary: Domovská stránka eshopu
+      description: Na domovskej stránke sa zobrazia bestsellery a nadchádzajúce udalosti
+      responses:
+        '200':
+          description: Odpoveď so zoznamom s JSONmi v ktorých sa nachádzajú informácie o knihách a udalostiach
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  books:
+                    example:
+                        - id: 1
+                          title: 'The Hobbit'
+                          author: 'J.R.R. Tolkien'
+                          price: 15.99
+                          img_path: 'hobbit.img'
+                  events:
+                    type: object
+                    example:
+                      - id: 1
+                        name: 'Goodnight Reading'
+                        description: 'April 24th 2022 at 20:00'
+                        img_path: 'samplereading.img'
+  
+  /genres:
+    get:
+      tags:
+        - "Genres"
+      summary: Vráti zoznam žánrov
+      parameters:                 
+        - name: query
+          in: query
+          required: false
+          description: Vybraný žáner, podľa ktorého sa budú filtovať výsledky
+          schema:
+            type: string
+            enum:
+              - Fantasy
+              - Sci-Fi
+              - Biography
+              - Romance
+              - Historical
+              - Krimi
+              - Thriller
+              - Documentary
+              
+      responses:
+        '200':
+          description: Odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  books:
+                    type: object
+                    example:
+                        - id: 1
+                          title: 'The Hobbit'
+                          author: 'J.R.R. Tolkien'
+                          price: 15.99
+                          img_path: 'hobbit.png'
+                  genre: 
+                     type: object
+                     example:
+                        [ "Fantasy", "Thriller" ]
+  
+  /books:
+    get:
+      tags:
+        - "Books"
+      summary: Vráti zoznam kníh
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSONov so zoznamom kníh
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  books: 
+                      $ref: '#/components/schemas/GetBook'
+    post:
+      tags:
+      - "Books"
+      summary: Nahranie nového záznamu do databázy
+      requestBody:
+        description: Povinné polia sú `title`, `price`, `release_year`, `quantity` a `isbn`
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBook'
+      responses:
+        '201':
+          description: Detail vytvoreného záznamu
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  book:
+                    $ref: '#/components/schemas/AfterCreateBook'
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '422':
+          description: Detaily validačnej chyby
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                        reasons:
+                          type: array
+                    example:
+                      - field: release_year
+                        reasons: required
+                      - field: isbn
+                        reasons: required
+                      - field: title
+                        reasons: null string not accepted
+
+  /books/{id}:      
+    get:
+      tags:
+        - "Books"
+      summary: Vráti záznam o knihe podľa id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu
+          schema:
+            type: integer
+            
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  book:
+                    $ref: '#/components/schemas/BookDetail'
+        '404':
+          description: Záznam o knihe neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Záznam neexistuje"
+    put:
+      tags:
+      - "Books"
+      summary: Aktualizovanie záznamu podľa id
+      requestBody:
+        description: Uvádzajú sa iba polia so zmenenými hodnotami.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBook'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  book:
+                    $ref: '#/components/schemas/AfterCreateBook'
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '404':
+          description: Záznam o knihe neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Záznam neexistuje"
+        '422':
+          description: Detaily validačnej chyby
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                        reasons:
+                          type: array
+                    example:
+                      - field: title
+                        reasons: null string not accepted
+                      - field: quantity
+                        reasons: not a number
+      
+    delete:
+      tags:
+      - "Books"
+      summary: Vymazanie záznamu podľa id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu (PK)
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Záznam bol úspešne odstránený
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '404':
+          description: Záznam o knihe neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Záznam neexistuje"
+                          
+  /search:
+    get:
+      tags:
+        - "Search"
+      summary: Vráti výsledok hľadaného výrazu
+      description: >
+        Výsledky vyhľadávania na základe parametrov
+          
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Výraz v query sa hľadá v atribútoch `author`,`title` a  `description`
+          schema:
+            type: string
+        
+        - name: filter
+          in: query
+          required: false
+          description: Hľadaný žáner
+          schema:
+            type: string
+
+            
+        - name: filterby
+          in: query
+          required: false
+          description: Voľba filtrov
+          schema:
+            type: string
+            enum:
+              - author
+              - genre
+         
+        - name: ordertype
+          in: query
+          required: false
+          description: Smer zoraďovania
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+       
+        - name: orderby
+          in: query
+          required: false
+          description: Spôsob zoraďovania
+          schema:
+            type: string
+            enum:
+              - price
+              - release_year
+                    
+        - name: page
+          in: query
+          required: false
+          description: Číslo žiadanej stránky
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: Záznamy z tabuľky `books`
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  books:
+                    $ref: '#/components/schemas/BookDetail'
+                    
+  /events:
+    get:
+      tags:
+        - "Events"
+      summary: Vráti zoznam podujatí
+      
+        
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  events:
+                    $ref: '#/components/schemas/GetEvent'
+        '401':
+          description: Neoverený používateľ
+        
+        '403':
+          description: Neoprávnený používateľ
+          
+    post:
+      tags:
+      - "Events"
+      summary: Nahranie noveho zaznamu do databazy
+      requestBody:
+        description:  Povinné pole je `name`
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvent'
+      responses:
+        '201':
+          description: Očakávaná odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  events:
+                    $ref: '#/components/schemas/GetEvent'
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '422':
+          description: Detaily validačnej chyby
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                        reasons:
+                          type: array
+                    example:
+                      - field: name
+                        reasons: required
+                      - field: user_id
+                        reasons: not a number
+              
+  /events/{id}:      
+    get:
+      tags:
+        - "Events"
+      summary: Vráti záznam o podujatí podľa id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  event:
+                    $ref: '#/components/schemas/GetEvent'
+        '404':
+          description: Záznam o podujatí neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Záznam neexistuje"
+        
+    put:
+      tags:
+      - "Events"
+      summary: Nahranie noveho zaznamu do databazy
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu
+          schema:
+            type: integer
+      requestBody:
+        description: Uvádzajú sa iba polia so zmenenými hodnotami
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvent'
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSON
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  event:
+                    $ref: '#/components/schemas/AfterPutEvent'
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '404':
+          description: Záznam o knihe neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Záznam neexistuje"
+        '422':
+          description: Detaily validačnej chyby
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          type: string
+                        reasons:
+                          type: array
+                    example:
+                      - field: description
+                        reasons: null string not accepted
+      
+    delete:
+      tags:
+      - "Events"
+      summary: Vymazanie zaznamu podla id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: V prípade úspešného záznamu, server vracia prázdnu odpoveď
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '404':
+          description: Záznam neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Záznam neexistuje"
+                      
+  /profile/{id}:
+    get:
+      tags:
+        - "Auth"
+      summary: Vráti informácie o profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id záznamu
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Očakávaná odpoveď vo formáte JSONov so zoznamom kníh
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  user:
+                   $ref: '#/components/schemas/GetProfile'
+        '401':
+          description: Neoverený používateľ
+        '403':
+          description: Neoprávnený používateľ
+        '404':
+          description: Záznam o profile neexistuje na strane servera
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Používateľ neexistuje"
+          
+  /login:
+    post:
+      tags:
+        - "Auth"
+      summary: Prihlásenie používateľa
+      requestBody:
+        description: Polia `email` a `password` sú povinné
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '204':
+          description: V prípade úspechu, server vracia prázdnu odpoveď
+        '401':
+          description: Neoverený používateľ
+        
+          
+  /logout:
+    post:
+      tags:
+        - "Auth"
+      summary: Odhlásenie používateľa
+      
+      responses:
+        '204':
+          description: V prípade úspechu, server vracia prázdnu odpoveď
+          
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Invalid user"
+
+components:
+  schemas:
+    BookDetail:
+      properties:
+        id:
+          type: integer
+          example: 1
+        title: 
+          type: string
+          example: 'The Hobbit'
+        author: 
+          type: string
+          example: 'J.R.R. Tolkien'
+        price: 
+          type: number
+          example: 15.99
+        release_year: 
+          type: integer
+          example: 1937
+        description: 
+          type: string
+          example: 'Kultovy roman s ktorym sa vydate na dobrodruznu cestu Stredozemou'
+        isbn:
+          type: string
+          example: '9780007926664'
+        img_path: 
+          type: string
+          example: 'hobbit.png'
+        quantity:
+          type: integer
+          example: 250
+    
+    CreateBook:
+      properties:
+        title: 
+          type: string
+          example: 'The Hobbit'
+        author: 
+          type: string
+          example: 'J.R.R. Tolkien'
+        price: 
+          type: number
+          example: 15.99
+        release_year: 
+          type: integer
+          example: 1937
+        description: 
+          type: string
+          example: 'Kultovy roman s ktorym sa vydate na dobrodruznu cestu Stredozemou'
+        isbn:
+          type: string
+          example: '9780007926664'
+        img_path: 
+          type: string
+          example: 'hobbit.png'
+        quantity:
+          type: integer
+          example: 250
+        genre: 
+          type: string
+          example: 'Fantasy'
+      
+    AfterCreateBook:
+      properties:
+        id:
+          type: integer
+          example: 1
+        title: 
+          type: string
+          example: 'The Hobbit'
+        price: 
+          type: number
+          example: 15.99
+        release_year: 
+          type: integer
+          example: 1937
+        description: 
+          type: string
+          example: 'Kultovy roman s ktorym sa vydate na dobrodruznu cestu Stredozemou'
+        isbn:
+          type: string
+          example: '9780007926664'
+        img_path: 
+          type: string
+          example: 'hobbit.png'
+        quantity:
+          type: integer
+          example: 250
+        genre: 
+          type: string
+          example: 'Fantasy'
+        author_id: 
+          type: integer
+          example: 1
+        author_name: 
+          type: string
+          example: 'J.R.R. Tolkien'
+          
+    GetBook:
+      properties:
+        id:
+          type: integer
+          example: 1
+        title: 
+          type: string
+          example: 'The Hobbit'
+        author: 
+          type: string
+          example: 'J.R.R. Tolkien'
+        price: 
+          type: number
+          example: 15.99
+        img_path: 
+          type: string
+          example: 'hobbit.png'
+        release_year:
+          type: integer
+          example: 1937
+        description:
+          type: string
+          example: 'The main character Bilbo goes on a journey to raid the lair of a dangerous dragon.'
+      
+    UpdateBook:
+      properties:
+        title: 
+          type: integer
+          example: 'The Hobbit'
+        quantity:
+          type: integer
+          example: 250
+    
+    CreateEvent:
+      properties:
+        name: 
+          type: string
+          example: 'Evening Reading'
+        description: 
+          type: string
+          example: 'April 24th at 20:00'
+        img_path: 
+          type: string
+          example: 'reading.png'
+          
+    UpdateEvent:
+      properties:
+        description: 
+          type: string
+          example: 'TIME CHANGED: April 24th at 22:00'
+          
+    AfterPutEvent:
+      properties:
+        id:
+          type: integer
+          example: 1
+        name: 
+          type: string
+          example: 'Evening Reading'
+        description: 
+          type: string
+          example: 'TIME CHANGED: April 24th at 22:00'
+        img_path: 
+          type: string
+          example: 'reading.png'
+        user_id:
+          type: integer
+          example: 15
+          
+    GetEvent:
+      properties:
+        id:
+          type: integer
+          example: 1
+        name: 
+          type: string
+          example: 'Evening Reading'
+        description: 
+          type: string
+          example: 'April 24th at 20:00'
+        img_path: 
+          type: string
+          example: 'reading.png'
+        user_id:
+          type: integer
+          example: 15
+          
+    GetProfile:
+      properties:
+        id:
+          type: integer
+          example: 123
+        email: 
+          type: string
+          example: 'user123@email.com'
+          
+    Login:
+      properties:
+        email: 
+          type: string
+          example: 'user123@email.com'
+        password: 
+          type: string
+          example: 'password'
+  
+
+          
