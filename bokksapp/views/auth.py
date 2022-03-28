@@ -22,16 +22,25 @@ def login(request):
 def logout(request):
     try:
         del request.session['user']
+        return HttpResponse(status=204)
     except:
-        return HttpResponse(status=400)
-    return JsonResponse({"error": {"message": "Invalid user"}}, status=204, safe=False)
+        response = {'errors': {'message': 'Logout not successful'}}
+        http_status = 400
+        return JsonResponse(response, status=http_status, safe=False)
 
 
 @api_view(['GET', ])
 def profile(request, id):
-    if request.session['user']['id'] == id:
-        return JsonResponse({"user": request.session['user']}, status=200, safe=False)
+    if 'user' not in request.session:
+        response = {'errors': {'message': 'Unauthorized'}}
+        http_status = 401
+    elif request.session['user']['id'] == id:
+        response = {"user": request.session['user']}
+        http_status = 200
     elif request.session['user']['id']:
-        return HttpResponse(status=403)
+        response = {'errors': {'message': 'Forbidden'}}
+        http_status = 403
     else:
-        return HttpResponse(status=401)
+        response = {'errors': {'message': 'Unauthorized'}}
+        http_status = 401
+    return JsonResponse(response, status=http_status)
