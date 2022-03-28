@@ -14,10 +14,10 @@ def get_books(request):
     parameters['page'] = request.GET.get('page', 1)
     parameters['per_page'] = request.GET.get('per_page', 20)
 
-    # if user == 'admin':
-    #   books = Books.objects.values(*booksGetColumns)
-    # else:
-    books = Books.objects.values(*booksGetColumns).filter(deleted_at__isnull=True).distinct('id')
+    if request.session['user']['is_admin']:
+        books = Books.objects.values(*booksGetColumns)
+    else:
+        books = Books.objects.values(*booksGetColumns).filter(deleted_at__isnull=True).distinct('id')
 
     paginator = Paginator(books, parameters['per_page'])
     if paginator.num_pages >= int(parameters['page']):
@@ -83,7 +83,7 @@ def post_book(request):
 def process_request(request):
     if request.method == 'GET':
         response, http_status = get_books(request)
-    elif request.method == 'POST':
+    elif request.method == 'POST' and request.session['user']['is_admin']:
         response, http_status = post_book(request)
     else:
         response = {'errors': {'message': 'Bad request'}}
