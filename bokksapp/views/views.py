@@ -1,9 +1,10 @@
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
+from rest_framework.decorators import api_view
 
 from bokksapp.models import Books, Events
 
-
+@api_view(['GET'])
 def homepage(request):
 	if request.method == 'GET':
 		books = Books.objects.values().all()[:8]
