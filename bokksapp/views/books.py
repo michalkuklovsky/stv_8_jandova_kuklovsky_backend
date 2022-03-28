@@ -54,9 +54,9 @@ def post_book(request):
         if author is not None:
             authors.append(author)
         else:
-            # author = Authors.objects.create(name=author_name).save()
-            # authors.append(author.id)
-            return {'errors': {'author': 'Does not exist'}}, 400
+            author = Authors.objects.create(name=author_name)
+            authors.append(author.id)
+            # return {'errors': {'author': 'Does not exist'}}, 400
 
     # Find genre
     genre_names = post_data['genres'].split(', ')
