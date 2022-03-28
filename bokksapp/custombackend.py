@@ -2,8 +2,8 @@ from django.contrib.auth.backends import BaseBackend
 from bokksapp.models import Users
 
 
-def authenticate(request, email=None, password=None):
-    user = Users.objects.get(email=email)
+def authenticate(request, email, password):
+    user = Users.objects.filter(email=email).first()
     if user is None:
         return None
     if user.password == password:

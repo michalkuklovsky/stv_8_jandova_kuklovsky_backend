@@ -8,15 +8,11 @@
 - pridane /events /events/{id} a /search
 
 ## TODO
-- implementovat soft-delete a brat ho do uvahy v GET requestoch
-  - otazka co s PUT... upravit alebo vratit 404
+- presmerovania
+  - uspesny login -> homepage
+  - bezny uzivatel zavola PUT /events/{id} -> homepage
 - endpointy
-  - /
-  - /books
-  - /books/{id}
-  - /login
-  - /logout
-  - /profile/{id}
+  - GET /login na nacitanie stranky na prihlasovanie
 - yaml
   - pridat 'filter' do /search 
 - naplnit db datami
