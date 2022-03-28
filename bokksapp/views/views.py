@@ -7,8 +7,8 @@ from bokksapp.models import Books, Events
 @api_view(['GET'])
 def homepage(request):
 	if request.method == 'GET':
-		books = Books.objects.values().all()[:8]
-		events = Events.objects.values().all()[:4]
+		books = Books.objects.values().filter(deleted_at__isnull=True).all()[:8]
+		events = Events.objects.values().filter(deleted_at__isnull=True).all()[:6]
 		return JsonResponse({'books': list(books), 'events': list(events)}, status=status.HTTP_200_OK, safe=False)
 	return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
