@@ -2,6 +2,8 @@ import json
 
 from django.http import JsonResponse
 from django.utils import timezone
+from rest_framework.decorators import api_view
+
 
 
 from bokksapp.models import Events
@@ -11,7 +13,7 @@ eventsColumns = ['id', 'name', 'description', 'img_path', 'user__id', 'user__ema
 
 # GET /events/{id} endpoint
 def get_id(request, id):
-    event = Events.objects.values(*eventsColumns).filter(id=id).first()
+    event = Events.objects.values(*eventsColumns).filter(pk=id, deleted_at__isnull=True).first()
     if event is None:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
         
@@ -86,6 +88,8 @@ def delete_id(request, id):
 
     return {}, 204
 
+
+@api_view(['GET', 'DELETE', 'PUT'])
 def processRequest(request, id):
     if request.method == 'GET':
         response, http_status = get_id(request, id)

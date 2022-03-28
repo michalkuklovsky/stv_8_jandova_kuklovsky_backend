@@ -3,6 +3,8 @@ import json
 
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
+from rest_framework.decorators import api_view
+
 
 from bokksapp.models import Events
 # from bokksapp.models import Users
@@ -100,12 +102,14 @@ def check_post_body(new_item):
         if new_item['description'] == '':
             errors.append({'field': 'name', 'reasons': [reasons[1]]})
 
-    new_item['delete_at'] = datetime.now()
+    # new_item['delete_at'] = datetime.now()
 
     response = dict(new_item)
 
     return errors, response
 
+
+@api_view(['GET', 'POST'])
 def processRequest(request):
     if request.method == 'GET':
         response, http_status = getEvents(request)
