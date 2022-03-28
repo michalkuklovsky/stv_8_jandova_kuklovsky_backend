@@ -8,12 +8,8 @@
 - pridane /events /events/{id} a /search
 
 ## TODO
-- presmerovania
-  - uspesny login -> homepage
-  - bezny uzivatel zavola PUT /events/{id} -> homepage
-- endpointy
-  - GET /login na nacitanie stranky na prihlasovanie
+- upload suboru
 - yaml
-  - pridat 'filter' do /search 
+  - aktualizovat podla reality
 - naplnit db datami
 - Figma (optional xD)
