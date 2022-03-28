@@ -75,7 +75,7 @@ def post_book(request):
 
     if book.is_valid():
         book.save()
-        return book.data, 200
+        return book.data, 201
     return {'errors': book.errors}, 400
 
 
