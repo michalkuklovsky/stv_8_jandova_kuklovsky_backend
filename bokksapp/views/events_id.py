@@ -3,6 +3,8 @@ import json
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework.decorators import api_view
+from datetime import datetime
+
 
 
 
@@ -10,15 +12,17 @@ from bokksapp.models import Events
 # from bokksapp.models import Users
 
 eventsColumns = ['id', 'name', 'description', 'img_path', 'user__id', 'user__email']
+eventsAdminColumns = ['id', 'name', 'description', 'img_path', 'created_at', 'updated_at', 'deleted_at', 'user__id', 'user__email']
 
 # GET /events/{id} endpoint
 def get_id(request, id):
-    event = Events.objects.values(*eventsColumns).filter(pk=id, deleted_at__isnull=True).first()
+    if 'user' in request.session and request.session['user']['is_admin']:
+        event = Events.objects.values(*eventsAdminColumns).filter(pk=id).first()
+    else:
+        event = Events.objects.values(*eventsColumns).filter(pk=id, deleted_at__isnull=True).first()
+
     if event is None:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
-        
-    # if event['deleted_at'] is not None:
-    #     return {'error': {'message': 'Zaznam neexistuje'}}, 404
 
     response = serialize_object('event', event)
     return response, 200
@@ -27,26 +31,41 @@ def serialize_object(str, get):
     return {str: get}
 
 
-eventsPutColumns = ['name', 'description', 'img_path']
+eventsPutColumns = ['name', 'description', 'img_path', 'deleted_at']
 reasons = ['required', 'null string not allowed', 'not number']
 
 # PUT /events/{id} endpoint
 def put_id(request, id):
+    if 'user' not in request.session:
+        response = {'errors': {'message': 'Unauthorized'}}
+        http_status = 401
+        return response, http_status
+    if not request.session['user']['is_admin']:
+        response = {'errors': {'message': 'Forbidden'}}
+        http_status = 403
+        return response, http_status
+    
     new_item = {}
     new_item = json.loads(request.body)
+
     if new_item == {}:
-        return {'errors': {'message': 'request body required'}}, 422
+        response = {'errors': {'message': 'request body required'}}
+        http_status = 422
+        return response, http_status
+
     errors, update = check_put_body(new_item)
     if errors:
         return {'errors': errors}, 422
 
     put = Events.objects.filter(id=id).first()
     if put is None:
-        return {'errors': {'message': 'Zaznam neexistuje'}}, 404
+        response = {'errors': {'message': 'Zaznam neexistuje'}}
+        http_status = 404
+        return response, http_status
 
     Events.objects.filter(id=id).update(**update)
 
-    put = Events.objects.values(*eventsColumns).filter(id=id).first()
+    put = Events.objects.values(*eventsAdminColumns).filter(id=id).first()
     return serialize_object('event', put), 201
 
 # checks parameters in POST requst body and handles errors
@@ -70,21 +89,35 @@ def check_put_body(new_item):
     if new_item['description'] is not None:
         if new_item['description'] == '':
             errors.append({'field': 'name', 'reasons': [reasons[1]]})
+    
+    new_item['updated_at'] = datetime.now()
 
     for x in eventsPutColumns:
         if new_item[x] is not None:
-            update[x] = new_item[x]
+            if x == 'deleted_at' and new_item[x] == 'undelete':
+                update[x] = None
+            else:
+                update[x] = new_item[x]
 
     return errors, update
 
 
 # delete /events/{id} endpoint
 def delete_id(request, id):
+    if 'user' not in request.session:
+        response = {'errors': {'message': 'Unauthorized'}}
+        http_status = 401
+        return response, http_status
+    if not request.session['user']['is_admin']:
+        response = {'errors': {'message': 'Forbidden'}}
+        http_status = 403
+        return response, http_status
+
     event = Events.objects.filter(id=id).first()
     if event is None:
         return {'errors': {'message': 'Zaznam neexistuje'}}, 404
 
-    Events.objects.filter(id=id).update(deleted_at=timezone.now())
+    Events.objects.filter(id=id).update(updated_at=timezone.now(), deleted_at=timezone.now())
 
     return {}, 204
 
