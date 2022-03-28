@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.parsers import JSONParser
 
 
-@api_view(['POST', ])
+@api_view(['POST'])
 def login(request):
     post_data = JSONParser().parse(request)
 
@@ -18,7 +18,7 @@ def login(request):
     return HttpResponse(status=204)
 
 
-@api_view(['POST', ])
+@api_view(['POST'])
 def logout(request):
     try:
         del request.session['user']
@@ -27,7 +27,7 @@ def logout(request):
     return JsonResponse({"error": {"message": "Invalid user"}}, status=204, safe=False)
 
 
-@api_view(['GET', ])
+@api_view(['GET'])
 def profile(request, id):
     if request.session['user']['id'] == id:
         return JsonResponse({"user": request.session['user']}, status=200, safe=False)

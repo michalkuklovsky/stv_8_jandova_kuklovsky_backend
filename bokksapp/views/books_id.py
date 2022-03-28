@@ -24,11 +24,17 @@ def get_book(request, id):
 
 def put_book(request, id):
     put_data = JSONParser().parse(request)
+
+    # TO-DO:
+    # check and validate put_data
+
     check_req(put_data)
     try:
         book = Books.objects.get(pk=id)
     except Books.DoesNotExist:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
+
+
     book.deleted_at = None
     book.save()
     response = {'book': PostBookSerializer(book).data}
