@@ -74,18 +74,13 @@ paths:
               schema: 
                 type: object
                 properties: 
-                  books:
-                    type: object
-                    example:
-                        - id: 1
-                          title: 'The Hobbit'
-                          author: 'J.R.R. Tolkien'
-                          price: 15.99
-                          img_path: 'hobbit.png'
+                  books: 
+                      $ref: '#/components/schemas/GetBook'
                   genre: 
                      type: object
                      example:
-                        [ "Fantasy", "Thriller" ]
+                         [  {"id": 1, "name": "Fantasy" }, 
+                            {"id": 2, "name": "Thriller"} ]
   
   /books:
     get:
@@ -107,7 +102,7 @@ paths:
       - "Books"
       summary: Nahranie nového záznamu do databázy
       requestBody:
-        description: Povinné polia sú `title`, `price`, `release_year`, `quantity` a `isbn`
+        description: Povinné polia sú `title`, `price`, `release_year`, `quantity`, `author`, `genre` a `isbn`
         required: true
         content:
           application/json:
@@ -661,7 +656,7 @@ components:
         title: 
           type: string
           example: 'The Hobbit'
-        author: 
+        authors: 
           type: string
           example: 'J.R.R. Tolkien'
         price: 
@@ -676,16 +671,19 @@ components:
         isbn:
           type: string
           example: '9780007926664'
-        img_path: 
-          type: string
-          example: 'hobbit.png'
         quantity:
           type: integer
           example: 250
-        genre: 
+        genres: 
           type: string
           example: 'Fantasy'
-      
+        img_path: 
+          type: string
+          example: 'hobbit.jpg'
+        image: 
+          type: object
+          example: file
+
     AfterCreateBook:
       properties:
         id:
@@ -712,15 +710,13 @@ components:
         quantity:
           type: integer
           example: 250
-        genre: 
-          type: string
-          example: 'Fantasy'
-        author_id: 
-          type: integer
-          example: 1
-        author_name: 
-          type: string
-          example: 'J.R.R. Tolkien'
+        genres: 
+          type: array
+          example: [1]
+        authors: 
+          type: array
+          example: [2]
+
           
     GetBook:
       properties:
@@ -730,9 +726,18 @@ components:
         title: 
           type: string
           example: 'The Hobbit'
-        author: 
+        authors__name: 
           type: string
           example: 'J.R.R. Tolkien'
+        authors__id:
+          type: number
+          example: 1
+        genres__name:
+          type: string
+          example: Fantasy
+        genres__id:
+          type: number
+          example: 1
         price: 
           type: number
           example: 15.99
