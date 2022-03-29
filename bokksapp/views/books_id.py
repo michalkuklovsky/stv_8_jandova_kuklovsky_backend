@@ -1,10 +1,11 @@
-from django.http import JsonResponse
-from rest_framework.parsers import JSONParser
+from django.http import JsonResponse, HttpResponse
 from rest_framework.decorators import api_view
 from bokksapp.models import Books
 from datetime import datetime
-from django.db.models import Q
-from bokksapp.serializers.books_serializer import GetBooksSerializer, PostBookSerializer
+from bokksapp.views.books import check_req
+from bokksapp.serializers.books_serializer import PutBookSerializer
+from bokksapp.views.events import handle_uploaded_file
+
 
 bookGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'quantity', 'authors__id', 'authors__name', 'genres__id', 'genres__name']
 
@@ -23,26 +24,37 @@ def get_book(request, id):
 
 
 def put_book(request, id):
-    put_data = JSONParser().parse(request)
-
-    # TO-DO:
-    # check and validate put_data
-
-    check_req(put_data)
     try:
-        book = Books.objects.get(pk=id)
+        Books.objects.get(pk=id)
     except Books.DoesNotExist:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
 
+    put_data = request.data
 
-    book.deleted_at = None
-    book.save()
-    response = {'book': PostBookSerializer(book).data}
+    if 'image' in request.FILES:
+        file = request.FILES['image']
+    else:
+        file = None
+
+    errors, book_data = check_req(put_data, file)
+    if errors:
+        return errors, 422
+
+    if 'deleted_at' in book_data:
+        if book_data['deleted_at'] == 'recover':
+            book_data['deleted_at'] = None
+        if book_data['deleted_at'] == 'delete':
+            book_data['deleted_at'] = datetime.now()
+
+    if file:
+        del book_data['image']
+        handle_uploaded_file(file, book_data['img_path'], 'books')
+
+    Books.objects.filter(id=id).update(**book_data)
+
+    book = Books.objects.get(pk=id)
+    response = {'book': PutBookSerializer(book).data}
     return response, 200
-
-
-def check_req(put_data):
-    pass
 
 
 def delete_book(id):
@@ -53,18 +65,25 @@ def delete_book(id):
     book.updated_at = datetime.now()
     book.deleted_at = datetime.now()
     book.save()
-    return None, 204
+    return HttpResponse(status=204)
 
 
 @api_view(['GET', 'DELETE', 'PUT'])
 def process_request(request, id):
     if request.method == 'GET':
         response, http_status = get_book(request, id)
-    elif request.method == 'PUT' and request.session['user']['is_admin']:
-        response, http_status = put_book(request, id)
-    elif request.method == 'DELETE' and request.session['user']['is_admin']:
-        response, http_status = delete_book(id)
+
+    if 'user' in request.session:
+        if request.session['user']['is_admin']:
+            if request.method == 'PUT' and request.session['user']['is_admin']:
+                response, http_status = put_book(request, id)
+            elif request.method == 'DELETE' and request.session['user']['is_admin']:
+                return delete_book(id)
+        else:
+            response = {'errors': {'message': 'Forbidden'}}
+            http_status = 403
     else:
-        response = {'errors': {'message': 'Bad request'}}
-        http_status = 400
+        response = {'errors': {'message': 'Unauthorized'}}
+        http_status = 401
+
     return JsonResponse(response, status=http_status, safe=False)
