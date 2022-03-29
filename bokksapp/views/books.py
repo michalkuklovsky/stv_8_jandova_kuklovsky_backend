@@ -1,10 +1,9 @@
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
-from django.shortcuts import redirect
-from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 from bokksapp.models import Authors, Books, Genres
-from bokksapp.serializers.books_serializer import AuthorSerializer,GenreSerializer, GetBooksSerializer, PostBookSerializer
+from bokksapp.serializers.books_serializer import PostBookSerializer
+from bokksapp.views.events import handle_uploaded_file
 
 booksGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors__id', 'authors__name', 'genres__id', 'genres__name']
 
@@ -15,7 +14,7 @@ def get_books(request):
     parameters['per_page'] = request.GET.get('per_page', 20)
 
     if request.session['user']['is_admin']:
-        books = Books.objects.values(*booksGetColumns)
+        books = Books.objects.values(*booksGetColumns).distinct('id')
     else:
         books = Books.objects.values(*booksGetColumns).filter(deleted_at__isnull=True).distinct('id')
 
@@ -43,11 +42,16 @@ def serialize_object(parameters, page, paginator):
 
 
 def post_book(request):
-    post_data = JSONParser().parse(request)
+    post_data = request.data
 
-    # TO-DO:
-    # check post_data
-    # upload file and store ot locally
+    if 'image' in request.FILES:
+        file = request.FILES['image']
+    else:
+        file = None
+
+    errors, book_data = check_req(post_data, file)
+    if errors:
+        return errors, 422
 
     # Find author
     author_names = post_data['authors'].split(', ')
@@ -60,7 +64,6 @@ def post_book(request):
         else:
             author = Authors.objects.create(name=author_name)
             authors.append(author.id)
-            # return {'errors': {'author': 'Does not exist'}}, 400
 
     # Find genre
     genre_names = post_data['genres'].split(', ')
@@ -72,23 +75,56 @@ def post_book(request):
         else:
             return {'errors': {'genre': f'"{genre_name}" does not exist'}}, 400
 
-    post_data['authors'] = list(authors)
-    post_data['genres'] = list(genres)
+    book_data['authors'] = list(authors)
+    book_data['genres'] = list(genres)
 
-    book = PostBookSerializer(data=post_data)
+    # book_data['authors'] = authors[0]
+    # book_data['genres'] = genres[0]
+    if file:
+        del book_data['image']
+    book = PostBookSerializer(data=book_data)
 
     if book.is_valid():
         book.save()
+        if file:
+            handle_uploaded_file(file, book_data['img_path'], 'books')
         return book.data, 201
-    return {'errors': book.errors}, 400
+    return {'errors': book.errors}, 422
+
+
+def check_req(req_data, file):
+    errors = list()
+    book_data = {}
+    for param in req_data:
+        if req_data[param] == "" or req_data[param] == " ":
+            errors.append({f'{param}': 'Empty string not allowed'})
+        if param == "release_year" or param == "quantity" or param == "price":
+            book_data[param] = req_data[param]
+        else:
+            book_data[param] = req_data[param]
+
+    if 'img_path' in req_data and file is None:
+        errors.append({'field': 'image', 'reasons': 'img_path provided but file is missing'})
+
+    if file is not None and 'img_path' not in req_data:
+        errors.append({'field': 'img_path', 'reasons': 'image provided but img_path is missing'})
+    return errors, book_data
 
 
 @api_view(['GET', 'POST'])
 def process_request(request):
     if request.method == 'GET':
         response, http_status = get_books(request)
-    elif request.method == 'POST' and request.session['user']['is_admin']:
-        response, http_status = post_book(request)
+    elif request.method == 'POST':
+        if 'user' in request.session:
+            if request.session['user']['is_admin']:
+                response, http_status = post_book(request)
+            else:
+                response = {'errors': {'message': 'Forbidden'}}
+                http_status = 403
+        else:
+            response = {'errors': {'message': 'Unauthorized'}}
+            http_status = 401
     else:
         response = {'errors': {'message': 'Bad request'}}
         http_status = 400
