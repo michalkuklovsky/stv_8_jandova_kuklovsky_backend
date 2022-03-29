@@ -1,6 +1,6 @@
 import json
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from rest_framework.decorators import api_view
 from datetime import datetime
@@ -144,7 +144,7 @@ def delete_id(request, id):
 
     Events.objects.filter(id=id).update(updated_at=timezone.now(), deleted_at=timezone.now())
 
-    return {}, 204
+    return HttpResponse(status=204)
 
 
 @api_view(['GET', 'DELETE', 'PUT'])
@@ -154,7 +154,7 @@ def processRequest(request, id):
     elif request.method == 'PUT':
         response, http_status = put_id(request, id)
     elif request.method == 'DELETE':
-        response, http_status = delete_id(request, id)
+        return delete_id(request, id)
     else:
         response = {'errors': {'message': 'Bad request'}}
         http_status = 400

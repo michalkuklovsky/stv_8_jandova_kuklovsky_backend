@@ -69,7 +69,7 @@ def postEvents(request):
 
     newEvent = Events.objects.create(**new_item)
     if file is not None and new_item['img_path'] is not None:
-        handle_uploaded_file(file, new_item['img_path'])
+        handle_uploaded_file(file, new_item['img_path'], 'events')
 
     response_dict = {'id': newEvent.id}
     response_dict.update(response)
@@ -121,8 +121,8 @@ def check_post_body(request, new_item, file):
     return errors, response
 
 # https://docs.djangoproject.com/en/4.0/topics/http/file-uploads/
-def handle_uploaded_file(f, name):
-    with open(f'./bokksapp/resources/events/{name}', 'wb+') as destination:
+def handle_uploaded_file(f, name, res):
+    with open(f'./bokksapp/resources/{res}/{name}', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
 
