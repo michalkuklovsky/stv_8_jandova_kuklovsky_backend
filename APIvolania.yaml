@@ -95,7 +95,30 @@ paths:
                 type: object
                 properties: 
                   books: 
-                    $ref: '#/components/schemas/GetBook'
+                    example:
+                      - id: 1
+                        title: 'The Hobbit'
+                        price: 12.99
+                        release_year: 1937
+                        description: 'The main character Bilbo goes on a journey to raid the lair of a dangerous dragon.'
+                        isbn: '978-0007926664'
+                        img_path: 'hobbit.jpg'
+                        authors__id: 1
+                        authors__name: 'J.R.R. Tolkien'
+                        genres__id: 1
+                        genres__name: 'Fantasy'
+            
+                      - id: 2
+                        title: 'Harry Potter 5'
+                        price: 13.5
+                        release_year: 2020
+                        description: 'There is a door at the end of a silent corridor. And it’s haunting Harry Pottter’s dreams.'
+                        isbn: '978-1526618153'
+                        img_path: 'harrypotter5.jpg'
+                        authors__id: 3
+                        authors__name: 'J.K. Rowling'
+                        genres__id: 1
+                        genres__name: 'Fantasy'
     post:
       tags:
       - "Books"
@@ -394,7 +417,7 @@ paths:
                 properties:
                   books:
                     example:
-                      - id: 1,
+                      - id: 1
                         title: 'The Hobbit'
                         price: 12.99
                         release_year: 1937
@@ -778,38 +801,38 @@ components:
           type: integer
           example: "Fantasy"
     
-    CreateBook:
-      properties:
-        title: 
-          type: string
-          example: 'The Hobbit'
-        authors: 
-          type: string
-          example: 'J.R.R. Tolkien'
-        price: 
-          type: number
-          example: 15.99
-        release_year: 
-          type: integer
-          example: 1937
-        description: 
-          type: string
-          example: 'Kultovy roman s ktorym sa vydate na dobrodruznu cestu Stredozemou'
-        isbn:
-          type: string
-          example: '9780007926664'
-        quantity:
-          type: integer
-          example: 250
-        genres: 
-          type: string
-          example: 'Fantasy'
-        img_path: 
-          type: string
-          example: 'hobbit.jpg'
-        image: 
-          type: object
-          example: file
+    # CreateBook:
+    #   properties:
+    #     title: 
+    #       type: string
+    #       example: 'The Hobbit'
+    #     authors: 
+    #       type: string
+    #       example: 'J.R.R. Tolkien'
+    #     price: 
+    #       type: number
+    #       example: 15.99
+    #     release_year: 
+    #       type: integer
+    #       example: 1937
+    #     description: 
+    #       type: string
+    #       example: 'Kultovy roman s ktorym sa vydate na dobrodruznu cestu Stredozemou'
+    #     isbn:
+    #       type: string
+    #       example: '9780007926664'
+    #     quantity:
+    #       type: integer
+    #       example: 250
+    #     genres: 
+    #       type: string
+    #       example: 'Fantasy'
+    #     img_path: 
+    #       type: string
+    #       example: 'hobbit.jpg'
+    #     image: 
+    #       type: object
+    #       example: file
 
     AfterCreateBook:
       properties:
@@ -878,32 +901,32 @@ components:
           type: string
           example: 'The main character Bilbo goes on a journey to raid the lair of a dangerous dragon.'
       
-    UpdateBook:
-      properties:
-        title: 
-          type: integer
-          example: 'The Hobbit'
-        quantity:
-          type: integer
-          example: 250
+    # UpdateBook:
+    #   properties:
+    #     title: 
+    #       type: integer
+    #       example: 'The Hobbit'
+    #     quantity:
+    #       type: integer
+    #       example: 250
     
-    CreateEvent:
-      properties:
-        name: 
-          type: string
-          example: 'Evening Reading'
-        description: 
-          type: string
-          example: 'April 24th at 20:00'
-        img_path: 
-          type: string
-          example: 'reading.png'
+    # CreateEvent:
+    #   properties:
+    #     name: 
+    #       type: string
+    #       example: 'Evening Reading'
+    #     description: 
+    #       type: string
+    #       example: 'April 24th at 20:00'
+    #     img_path: 
+    #       type: string
+    #       example: 'reading.png'
           
-    UpdateEvent:
-      properties:
-        description: 
-          type: string
-          example: 'TIME CHANGED: April 24th at 22:00'
+    # UpdateEvent:
+    #   properties:
+    #     description: 
+    #       type: string
+    #       example: 'TIME CHANGED: April 24th at 22:00'
           
     AdminColumnsEvent:
       properties:
