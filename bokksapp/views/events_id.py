@@ -73,7 +73,7 @@ def put_id(request, id):
         handle_uploaded_file(file, new_item['img_path'])
 
     put = Events.objects.values(*eventsAdminColumns).filter(id=id).first()
-    return serialize_object('event', put), 201
+    return serialize_object('event', put), 200
 
 def parse_request(request):
     r = request.POST
