@@ -103,7 +103,7 @@ def get_query(query_parameters):
 
 # creates response for GET /search request
 def serialize_object(parameters, page, paginator):
-    response = {'items': list(page),
+    response = {'books': list(page),
                 'metadata': {
                     'page': int(parameters['page']),
                     'per_page': int(parameters['per_page']),

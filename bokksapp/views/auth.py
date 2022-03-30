@@ -11,7 +11,7 @@ def login(request):
 
     user = authenticate(request, post_data['email'], post_data['password'])
     if user is None:
-        return JsonResponse({"error": {"message": "Invalid user"}}, status=401, safe=False)
+        return JsonResponse({"error": {"message": "Invalid username or password"}}, status=401, safe=False)
 
     request.session['user'] = {"id": user.id, "email": user.email, "is_admin": user.is_admin}
 
@@ -24,7 +24,7 @@ def logout(request):
         del request.session['user']
         return HttpResponse(status=204)
     except:
-        response = {'errors': {'message': 'Logout not successful'}}
+        response = {'error': {'message': 'Logout not successful'}}
         http_status = 400
         return JsonResponse(response, status=http_status, safe=False)
 
@@ -32,15 +32,15 @@ def logout(request):
 @api_view(['GET'])
 def profile(request, id):
     if 'user' not in request.session:
-        response = {'errors': {'message': 'Unauthorized'}}
+        response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
     elif request.session['user']['id'] == id:
         response = {"user": request.session['user']}
         http_status = 200
     elif request.session['user']['id']:
-        response = {'errors': {'message': 'Forbidden'}}
+        response = {'error': {'message': 'Forbidden'}}
         http_status = 403
     else:
-        response = {'errors': {'message': 'Unauthorized'}}
+        response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
     return JsonResponse(response, status=http_status)

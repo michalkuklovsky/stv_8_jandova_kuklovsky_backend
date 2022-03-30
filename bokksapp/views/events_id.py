@@ -37,11 +37,11 @@ reasons = ['required', 'null string not allowed', 'img_path provided but file is
 # PUT /events/{id} endpoint
 def put_id(request, id):
     if 'user' not in request.session:
-        response = {'errors': {'message': 'Unauthorized'}}
+        response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
         return response, http_status
     if not request.session['user']['is_admin']:
-        response = {'errors': {'message': 'Forbidden'}}
+        response = {'error': {'message': 'Forbidden'}}
         http_status = 403
         return response, http_status
     
@@ -114,7 +114,7 @@ def check_put_body(new_item, file):
 
     for x in eventsPutColumns:
         if new_item[x] is not None:
-            if x == 'deleted_at' and new_item[x] == 'undelete':
+            if x == 'deleted_at' and new_item[x] == 'recover':
                 update[x] = None
             else:
                 update[x] = new_item[x]
@@ -130,21 +130,21 @@ def handle_uploaded_file(f, name):
 # delete /events/{id} endpoint
 def delete_id(request, id):
     if 'user' not in request.session:
-        response = {'errors': {'message': 'Unauthorized'}}
+        response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
         return response, http_status
     if not request.session['user']['is_admin']:
-        response = {'errors': {'message': 'Forbidden'}}
+        response = {'error': {'message': 'Forbidden'}}
         http_status = 403
         return response, http_status
 
     event = Events.objects.filter(id=id).first()
     if event is None:
-        return {'errors': {'message': 'Zaznam neexistuje'}}, 404
+        return {'error': {'message': 'Zaznam neexistuje'}}, 404
 
     Events.objects.filter(id=id).update(updated_at=timezone.now(), deleted_at=timezone.now())
 
-    return HttpResponse(status=204)
+    return {}, 204
 
 
 @api_view(['GET', 'DELETE', 'PUT'])
@@ -154,7 +154,9 @@ def processRequest(request, id):
     elif request.method == 'PUT':
         response, http_status = put_id(request, id)
     elif request.method == 'DELETE':
-        return delete_id(request, id)
+        response, http_status = delete_id(request, id)
+        if http_status == 204:
+            return HttpResponse(status=http_status)
     else:
         response = {'errors': {'message': 'Bad request'}}
         http_status = 400

@@ -4,6 +4,7 @@ import json
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 from rest_framework.decorators import api_view
+from django.db.models import F
 
 
 from bokksapp.models import Events
@@ -11,6 +12,8 @@ from bokksapp.models import Users
 
 eventsGetColumns = ['id', 'name', 'description', 'img_path', 'user__id', 'user__email']
 eventsPostColumns = ['name', 'description', 'img_path', 'user__id']
+eventsAdminColumns = ['id', 'name', 'description', 'img_path', 'created_at', 'updated_at', 'deleted_at', 'user__id', 'user__email']
+
 
 # GET /events endpoint
 def getEvents(request):
@@ -28,7 +31,7 @@ def getEvents(request):
 
 # creates response for GET /events request
 def serialize_object(parameters, page, paginator):
-    response = {'items': list(page),
+    response = {'events': list(page),
                 'metadata': {
                     'page': int(parameters['page']),
                     'per_page': int(parameters['per_page']),
@@ -40,7 +43,7 @@ def serialize_object(parameters, page, paginator):
 
 
 def get_query(parameters):
-    response = Events.objects.values(*eventsGetColumns)
+    response = Events.objects.values(*eventsGetColumns).order_by(F('id').asc(nulls_last=True))
 
     paginator = Paginator(response, parameters['per_page'])
 
@@ -71,13 +74,9 @@ def postEvents(request):
     if file is not None and new_item['img_path'] is not None:
         handle_uploaded_file(file, new_item['img_path'], 'events')
 
-    response_dict = {'id': newEvent.id}
-    response_dict.update(response)
-    del response_dict['user']
-    response_dict['user__id'] = request.session['user']['id'] 
-    response_dict['user__email'] = request.session['user']['email'] 
+    response_dict = Events.objects.filter(id=newEvent.id).values(*eventsAdminColumns).first()
 
-    return {'response': response_dict}, 201
+    return {'event': response_dict}, 201
 
 def parse_request(request):
     r = request.POST
@@ -129,12 +128,12 @@ def handle_uploaded_file(f, name, res):
 @api_view(['GET', 'POST'])
 def processRequest(request):
     if 'user' not in request.session:
-        response = {'errors': {'message': 'Unauthorized'}}
+        response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
         return JsonResponse(response, status=http_status, safe=False)
 
     if not request.session['user']['is_admin']:
-        response = {'errors': {'message': 'Forbidden'}}
+        response = {'error': {'message': 'Forbidden'}}
         http_status = 403
         return JsonResponse(response, status=http_status, safe=False)
 
@@ -143,6 +142,6 @@ def processRequest(request):
     elif request.method == 'POST':
         response, http_status = postEvents(request)
     else:
-        response = {'errors': {'message': 'Bad request'}}
+        response = {'error': {'message': 'Bad request'}}
         http_status = 400
     return JsonResponse(response, status=http_status, safe=False)
