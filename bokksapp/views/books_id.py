@@ -11,7 +11,7 @@ bookGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn',
 
 
 def get_book(request, id):
-    if request.session['user']['is_admin']:
+    if 'user' in request.session and request.session['user']['is_admin']:
         book = Books.objects.values(*bookGetColumns).filter(pk=id).first()
     else:
         book = Books.objects.values(*bookGetColumns).filter(pk=id, deleted_at__isnull=True).first()
@@ -73,17 +73,26 @@ def process_request(request, id):
     if request.method == 'GET':
         response, http_status = get_book(request, id)
 
-    if 'user' in request.session:
-        if request.session['user']['is_admin']:
-            if request.method == 'PUT' and request.session['user']['is_admin']:
+    elif request.method == 'PUT':
+        if 'user' in request.session:
+            if request.session['user']['is_admin']:
                 response, http_status = put_book(request, id)
-            elif request.method == 'DELETE' and request.session['user']['is_admin']:
-                return delete_book(id)
+            else:
+                response = {'errors': {'message': 'Unauthorized'}}
+                http_status = 401
         else:
             response = {'errors': {'message': 'Forbidden'}}
             http_status = 403
-    else:
-        response = {'errors': {'message': 'Unauthorized'}}
-        http_status = 401
+
+    elif request.method == 'DELETE':
+        if 'user' in request.session:
+            if request.session['user']['is_admin']:
+                return delete_book(id)
+            else:
+                response = {'errors': {'message': 'Unauthorized'}}
+                http_status = 401
+        else:
+            response = {'errors': {'message': 'Forbidden'}}
+            http_status = 403
 
     return JsonResponse(response, status=http_status, safe=False)

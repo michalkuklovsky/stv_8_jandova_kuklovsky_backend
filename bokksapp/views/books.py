@@ -5,7 +5,7 @@ from bokksapp.models import Authors, Books, Genres
 from bokksapp.serializers.books_serializer import PostBookSerializer
 from bokksapp.views.events import handle_uploaded_file
 
-booksGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors__id', 'authors__name', 'genres__id', 'genres__name']
+booksGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors', 'authors__name', 'genres__id', 'genres__name']
 
 
 def get_books(request):
@@ -13,7 +13,7 @@ def get_books(request):
     parameters['page'] = request.GET.get('page', 1)
     parameters['per_page'] = request.GET.get('per_page', 20)
 
-    if request.session['user']['is_admin']:
+    if 'user' in request.session and request.session['user']['is_admin']:
         books = Books.objects.values(*booksGetColumns).distinct('id')
     else:
         books = Books.objects.values(*booksGetColumns).filter(deleted_at__isnull=True).distinct('id')
@@ -98,8 +98,11 @@ def check_req(req_data, file):
     for param in req_data:
         if req_data[param] == "" or req_data[param] == " ":
             errors.append({f'{param}': 'Empty string not allowed'})
-        if param == "release_year" or param == "quantity" or param == "price":
-            book_data[param] = req_data[param]
+        if param == "quantity" or param == "price":
+            book_data[param] = float(req_data[param])
+        elif param == "release_year":
+            book_data[param] = int(req_data[param])
+
         else:
             book_data[param] = req_data[param]
 
@@ -113,20 +116,18 @@ def check_req(req_data, file):
 
 @api_view(['GET', 'POST'])
 def process_request(request):
-    if request.method == 'GET':
-        response, http_status = get_books(request)
-    elif request.method == 'POST':
-        if 'user' in request.session:
-            if request.session['user']['is_admin']:
+    if 'user' in request.session:
+        if request.session['user']['is_admin']:
+            if request.method == 'GET':
+                response, http_status = get_books(request)
+            elif request.method == 'POST':
                 response, http_status = post_book(request)
-            else:
-                response = {'errors': {'message': 'Forbidden'}}
-                http_status = 403
         else:
             response = {'errors': {'message': 'Unauthorized'}}
             http_status = 401
     else:
-        response = {'errors': {'message': 'Bad request'}}
-        http_status = 400
+        response = {'errors': {'message': 'Forbidden'}}
+        http_status = 403
+
     return JsonResponse(response, status=http_status, safe=False)
 
