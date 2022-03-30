@@ -37,7 +37,6 @@ paths:
                           price: 15.99
                           img_path: 'hobbit.img'
                   events:
-                    type: object
                     example:
                       - id: 1
                         name: 'Goodnight Reading'
@@ -96,7 +95,7 @@ paths:
                 type: object
                 properties: 
                   books: 
-                      $ref: '#/components/schemas/GetBook'
+                    $ref: '#/components/schemas/GetBook'
     post:
       tags:
       - "Books"
@@ -105,9 +104,33 @@ paths:
         description: Povinné polia sú `title`, `price`, `release_year`, `quantity`, `author`, `genre` a `isbn`
         required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateBook'
+          multipart/form-data: 
+            schema:  
+              type: object
+              properties:      
+                title:            
+                  type: string
+                price:       
+                  type: number
+                release_year:       
+                  type: integer
+                description:       
+                  type: string
+                isbn:       
+                  type: string
+                author:       
+                  type: string
+                genre:       
+                  type: string
+                quantity:       
+                  type: integer
+                img_path:
+                  type: string
+                image:  
+                  type: string
+                  format: binary
+                deleted_at:  
+                  type: string
       responses:
         '201':
           description: Detail vytvoreného záznamu
@@ -184,12 +207,39 @@ paths:
       - "Books"
       summary: Aktualizovanie záznamu podľa id
       requestBody:
-        description: Uvádzajú sa iba polia so zmenenými hodnotami.
+        description: Uvádzajú sa iba polia so zmenenými hodnotami, v prípade obnovania eventu musí pole `deleted_at` obsahovat reťazec "recover"
         required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateBook'
+          multipart/form-data: 
+            schema:  
+              type: object
+              properties:      
+                title:            
+                  type: string
+                price:       
+                  type: number
+                release_year:       
+                  type: integer
+                description:       
+                  type: string
+                isbn:       
+                  type: string
+                quantity:       
+                  type: integer
+                img_path:
+                  type: string
+                image:  
+                  type: string
+                  format: binary
+                deleted_at:  
+                  type: string
+      # requestBody:
+      #   description: Uvádzajú sa iba polia so zmenenými hodnotami.
+      #   required: true
+      #   content:
+      #     application/json:
+      #       schema:
+      #         $ref: '#/components/schemas/UpdateBook'
       parameters:
         - name: id
           in: path
@@ -343,7 +393,31 @@ paths:
                 type: object
                 properties:
                   books:
-                    $ref: '#/components/schemas/BookDetail'
+                    example:
+                      - id: 1,
+                        title: 'The Hobbit'
+                        price: 12.99
+                        release_year: 1937
+                        description: 'The main character Bilbo goes on a journey to raid the lair of a dangerous dragon.'
+                        isbn: '978-0007926664'
+                        img_path: 'hobbit.jpg'
+                        authors__id: 1
+                        authors__name: 'J.R.R. Tolkien'
+                        genres__id: 1
+                        genres__name: 'Fantasy'
+            
+                      - id: 7
+                        title: 'Harry Potter 5'
+                        price: 13.5
+                        release_year: 2020
+                        description: 'There is a door at the end of a silent corridor. And it’s haunting Harry Pottter’s dreams.'
+                        isbn: '978-1526618153'
+                        img_path: 'harrypotter5.jpg'
+                        authors__id: 3
+                        authors__name: 'J.K. Rowling'
+                        genres__id: 1
+                        genres__name: 'Fantasy'
+
                     
   /events:
     get:
@@ -361,7 +435,19 @@ paths:
                 type: object
                 properties: 
                   events:
-                    $ref: '#/components/schemas/GetEvent'
+                    example:
+                      - id: 1
+                        name: 'evening reading 20.3.'
+                        description: 'April 24th 2022 at 20:00'
+                        img_path: 'samplereading.jpg'
+                        user__id: 1
+                        user__email: 'admin@email.com'
+                      - id: 2
+                        name: 'Goodnight Reading'
+                        description: 'April 24th 2022 at 20:00'
+                        img_path: 'reading.jpg'
+                        user__id: 2
+                        user__email: 'michal@email.com'
         '401':
           description: Neoverený používateľ
         
@@ -373,12 +459,23 @@ paths:
       - "Events"
       summary: Nahranie noveho zaznamu do databazy
       requestBody:
-        description:  Povinné pole je `name`
+        description:  Povinné pole je `name`, v pripade nahrávania obrázka musia byť uvedené polia `img_path` aj `image`
         required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateEvent'
+          multipart/form-data: 
+            schema:  
+              type: object
+              properties:      
+                name:            
+                  type: string
+                description:       
+                  type: string
+                img_path:
+                  type: string
+                image:  
+                  type: string
+                  format: binary
+
       responses:
         '201':
           description: Očakávaná odpoveď vo formáte JSON
@@ -387,8 +484,8 @@ paths:
               schema: 
                 type: object
                 properties: 
-                  events:
-                    $ref: '#/components/schemas/GetEvent'
+                  event:
+                    $ref: '#/components/schemas/AdminColumnsEvent'
         '401':
           description: Neoverený používateľ
         '403':
@@ -460,12 +557,25 @@ paths:
           schema:
             type: integer
       requestBody:
-        description: Uvádzajú sa iba polia so zmenenými hodnotami
+        description: Uvádzajú sa iba polia so zmenenými hodnotami, v prípade obnovania eventu musí pole `deleted_at` obsahovat reťazec "recover"
         required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateEvent'
+          multipart/form-data: 
+            schema:  
+              type: object
+              properties:      
+                name:            
+                  type: string
+                description:       
+                  type: string
+                img_path:
+                  type: string
+                image:  
+                  type: string
+                  format: binary
+                deleted_at:  
+                  type: string
+                
       responses:
         '200':
           description: Očakávaná odpoveď vo formáte JSON
@@ -475,7 +585,7 @@ paths:
                 type: object
                 properties: 
                   event:
-                    $ref: '#/components/schemas/AfterPutEvent'
+                    $ref: '#/components/schemas/AdminColumnsEvent'
         '401':
           description: Neoverený používateľ
         '403':
@@ -576,7 +686,7 @@ paths:
                   error:
                     type: object
                     example: 
-                      message: "Používateľ neexistuje"
+                      message: "Specified user does not exist"
           
   /login:
     post:
@@ -595,8 +705,16 @@ paths:
           description: V prípade úspechu, server vracia prázdnu odpoveď
         '401':
           description: Neoverený používateľ
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  error:
+                    type: object
+                    example: 
+                      message: "Invalid username or password"
         
-          
   /logout:
     post:
       tags:
@@ -617,7 +735,7 @@ paths:
                   error:
                     type: object
                     example: 
-                      message: "Invalid user"
+                      message: "Logout not successful"
 
 components:
   schemas:
@@ -647,9 +765,18 @@ components:
         img_path: 
           type: string
           example: 'hobbit.png'
-        quantity:
+        authors__id: 
           type: integer
-          example: 250
+          example: 3
+        authors__name: 
+          type: string
+          example: "J.K. Rowling"
+        genres__id: 
+          type: integer
+          example: 1
+        genres__name: 
+          type: integer
+          example: "Fantasy"
     
     CreateBook:
       properties:
@@ -778,7 +905,7 @@ components:
           type: string
           example: 'TIME CHANGED: April 24th at 22:00'
           
-    AfterPutEvent:
+    AdminColumnsEvent:
       properties:
         id:
           type: integer
@@ -788,15 +915,28 @@ components:
           example: 'Evening Reading'
         description: 
           type: string
-          example: 'TIME CHANGED: April 24th at 22:00'
+          example: 'April 24th at 22:00'
         img_path: 
           type: string
           example: 'reading.png'
-        user_id:
+        created_at: 
+          type: string
+          example: '2022-03-28T14:18:36.441Z'
+        updated_at: 
+          type: string
+          example: '2022-03-28T12:37:11.601Z'
+        deleted_at: 
+          type: string
+          example: null
+        user__id: 
           type: integer
-          example: 15
+          example: 2
+        user__email: 
+          type: string
+          example: 'michal@email.com'
           
     GetEvent:
+      type: object
       properties:
         id:
           type: integer
@@ -810,9 +950,12 @@ components:
         img_path: 
           type: string
           example: 'reading.png'
-        user_id:
+        user__id:
           type: integer
           example: 15
+        user__email: 
+          type: string
+          example: 'admin@email.com'
           
     GetProfile:
       properties:
@@ -821,7 +964,10 @@ components:
           example: 123
         email: 
           type: string
-          example: 'user123@email.com'
+          example: 'admin@email.com'
+        is_admin: 
+          type: boolean
+          example: true
           
     Login:
       properties:
