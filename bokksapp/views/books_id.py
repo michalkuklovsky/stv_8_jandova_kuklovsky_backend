@@ -1,4 +1,5 @@
 from django.http import JsonResponse, HttpResponse
+import base64
 from rest_framework.decorators import api_view
 from bokksapp.models import Books
 from datetime import datetime
@@ -96,3 +97,24 @@ def process_request(request, id):
             http_status = 403
 
     return JsonResponse(response, status=http_status, safe=False)
+
+
+@api_view(['GET'])
+def get_image(request, id, img_path):
+    try:
+        Books.objects.get(pk=id)
+    except Books.DoesNotExist:
+        return {'error': {'message': 'Zaznam neexistuje'}}, 404
+
+    book = Books.objects.filter(id=id, img_path__iexact=img_path).first()
+    if book.img_path:
+        file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
+    else:
+        file = 'None'
+    # print(type(file))
+    image = base64.b64encode(file.read())
+    response = {"image": str(image)}
+    # response = b'data:image/png;base64,'+image
+    return JsonResponse(response, status=200, safe=False)
+
+

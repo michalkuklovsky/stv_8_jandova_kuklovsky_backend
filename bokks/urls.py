@@ -30,6 +30,7 @@ urlpatterns = [
     # BOOKS
     path('books/', books.process_request),
     path('books/<int:id>', books_id.process_request),
+    path('books/<int:id>/<str:img_path>', books_id.get_image),
 
     # AUTH
     path('profile/<int:id>', auth.profile),
