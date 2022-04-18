@@ -111,10 +111,12 @@ def get_image(request, id, img_path):
         file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
     else:
         file = 'None'
-    # print(type(file))
+
     image = base64.b64encode(file.read())
-    response = {"image": str(image)}
-    # response = b'data:image/png;base64,'+image
-    return JsonResponse(response, status=200, safe=False)
+    img_type = img_path.rsplit('.', 1)[1]
+    response = f"data:image/{img_type};base64,"
+    response = bytes(response, encoding='utf8')+image
+
+    return HttpResponse(response, status=200)
 
 

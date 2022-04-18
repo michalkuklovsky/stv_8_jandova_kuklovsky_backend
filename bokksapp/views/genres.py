@@ -30,7 +30,7 @@ def select_books(request, genre):
     parameters['page'] = request.GET.get('page', 1)
     parameters['per_page'] = request.GET.get('per_page', 8)
 
-    books = Books.objects.values(*booksColumns).all().filter(genres__name__icontains=genre, deleted_at__isnull=True)#.distinct('id')
+    books = Books.objects.values(*booksColumns).all().filter(genres__name__icontains=genre, deleted_at__isnull=True).distinct('id')
 
     paginator = Paginator(books, parameters['per_page'])
     if paginator.num_pages >= int(parameters['page']):
