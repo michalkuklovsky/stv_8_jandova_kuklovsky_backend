@@ -11,7 +11,7 @@ def getCart(request):
 
     if cart == {}:
         response = {}
-        response_code = 204
+        response_code = 200
     else:
         response = serialize_object(cart)
         response_code = 200
@@ -34,7 +34,9 @@ def postCart(request):
 
     for x in ['title', 'quantity', 'price']:
         if x not in new_item:
-            errors.append({'field': x, 'reasons': [reasons[0]]})
+            errors.append({'field': x, 'reasons': reasons[0]})
+        elif new_item[x] is None:
+            errors.append({'field': x, 'reasons': reasons[0]})
     if errors:
         return {'errors': errors}, 422
 
@@ -51,6 +53,7 @@ def postCart(request):
     request.session['cart'] += addToCart
 
     response_code = 201
+    response = {'cart': response}
     return response, response_code
 
 def parse_request(request):
@@ -71,13 +74,13 @@ def check_post_body(new_item):
 
     if new_item['quantity'] is not None:
         if new_item['quantity'] == '':
-            errors.append({'field': 'quantity', 'reasons': [reasons[0], reasons[0]]})
+            errors.append({'field': 'quantity', 'reasons': [reasons[0]]})
         else:
             new_item['quantity'] = int(new_item['quantity'])
 
     if new_item['price'] is not None:
         if new_item['price'] == '':
-            errors.append({'field': 'price', 'reasons': [reasons[0], reasons[0]]})
+            errors.append({'field': 'price', 'reasons': [reasons[0]]})
         else:
             new_item['price'] = float(new_item['price'])
     
@@ -100,3 +103,21 @@ def processRequest(request):
         response = {'error': {'message': 'Bad request'}}
         http_status = 400
     return JsonResponse(response, status=http_status, safe=False)
+
+@api_view(['DELETE'])
+def deleteFromCart(request, title):
+    if 'user' not in request.session:
+        response = {'error': {'message': 'Unauthorized'}}
+        http_status = 401
+        return JsonResponse(response, status=http_status, safe=False)
+    try:
+        size = len(request.session['cart'])
+        for i in range(size):
+            if request.session['cart'][i]['title'] == title:
+                del request.session['cart'][i]
+                request.session.modified = True
+        return HttpResponse(status=204)
+    except:
+        response = {'error': {'message': 'Deletion not successful'}}
+        http_status = 400
+        return JsonResponse(response, status=http_status, safe=False)

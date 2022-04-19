@@ -33,6 +33,7 @@ urlpatterns = [
     path('books/<int:id>/<str:img_path>', books_id.get_image),
     # CART
     path('cart/', cart.processRequest),
+    path('cart/<str:title>', cart.deleteFromCart),
     # Orders
     path('orders/', orders.processRequest),
     # AUTH
