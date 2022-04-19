@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from bokksapp.views import homepage, search, genres, events, events_id, books, books_id, auth
+from bokksapp.views import homepage, search, genres, events, events_id, books, books_id, auth, cart, orders
 
 urlpatterns = [
     # HOME
@@ -31,7 +31,10 @@ urlpatterns = [
     path('books/', books.process_request),
     path('books/<int:id>', books_id.process_request),
     path('books/<int:id>/<str:img_path>', books_id.get_image),
-
+    # CART
+    path('cart/', cart.processRequest),
+    # Orders
+    path('orders/', orders.processRequest),
     # AUTH
     path('profile/<int:id>', auth.profile),
     path('login', auth.login),
