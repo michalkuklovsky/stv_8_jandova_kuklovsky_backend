@@ -5,7 +5,7 @@ from bokksapp.models import Authors, Books, Genres
 from bokksapp.serializers.books_serializer import PostBookSerializer
 from bokksapp.views.events import handle_uploaded_file
 
-booksGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'authors', 'authors__name', 'genres__id', 'genres__name']
+booksGetColumns = ['id', 'title', 'price', 'release_year', 'description', 'isbn', 'img_path', 'quantity', 'authors', 'authors__name', 'genres__id', 'genres__name']
 
 
 def get_books(request):
