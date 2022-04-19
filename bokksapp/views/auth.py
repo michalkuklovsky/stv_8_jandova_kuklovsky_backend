@@ -8,7 +8,10 @@ from rest_framework.parsers import JSONParser
 @api_view(['POST'])
 def login(request):
     post_data = JSONParser().parse(request)
-
+    try:
+        del request.session['user']
+    except:
+        pass
     user = authenticate(request, post_data['email'], post_data['password'])
     if user is None:
         return JsonResponse({"error": {"message": "Invalid username or password"}}, status=401, safe=False)
@@ -16,7 +19,8 @@ def login(request):
     request.session['user'] = {"id": user.id, "email": user.email, "is_admin": user.is_admin}
     request.session['cart'] = []
 
-    return HttpResponse(status=204)
+    response = {"user": request.session['user']}
+    return JsonResponse(response, status=200, safe=False)
 
 
 @api_view(['POST'])
@@ -26,7 +30,7 @@ def logout(request):
         del request.session['cart']
         return HttpResponse(status=204)
     except:
-        response = {'error': {'message': 'Logout not successful'}}
+        response = {'error': {'message': 'Log out not successful'}}
         http_status = 400
         return JsonResponse(response, status=http_status, safe=False)
 
@@ -45,4 +49,4 @@ def profile(request, id):
     else:
         response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
-    return JsonResponse(response, status=http_status)
+    return JsonResponse(response, status=http_status, safe=False)
