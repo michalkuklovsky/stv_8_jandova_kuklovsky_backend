@@ -177,8 +177,8 @@ def handleID(request, id):
         http_status = 403
         return response, http_status
 
-    response = serialize_object('order', order)
+    response = serialize_obj('order', order)
     return response, 200
 
-def serialize_object(str, get):
+def serialize_obj(str, get):
     return {str: get}

@@ -36,17 +36,17 @@ def logout(request):
 
 
 @api_view(['GET'])
-def profile(request, id):
+def profile(request):
     if 'user' not in request.session:
         response = {'error': {'message': 'Unauthorized'}}
         http_status = 401
-    elif request.session['user']['id'] == id:
+    else:
         response = {"user": request.session['user']}
         http_status = 200
-    elif request.session['user']['id']:
-        response = {'error': {'message': 'Forbidden'}}
-        http_status = 403
-    else:
-        response = {'error': {'message': 'Unauthorized'}}
-        http_status = 401
+    # elif request.session['user']['id']:
+    #     response = {'error': {'message': 'Forbidden'}}
+    #     http_status = 403
+    # else:
+    #     response = {'error': {'message': 'Unauthorized'}}
+    #     http_status = 401
     return JsonResponse(response, status=http_status, safe=False)
