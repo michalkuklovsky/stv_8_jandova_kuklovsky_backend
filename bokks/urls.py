@@ -36,6 +36,7 @@ urlpatterns = [
     path('cart/<str:title>', cart.deleteFromCart),
     # Orders
     path('orders/', orders.processRequest),
+    path('orders/<int:id>', orders.getID),
     # AUTH
     path('profile/<int:id>', auth.profile),
     path('login', auth.login),

@@ -64,6 +64,10 @@ reasons = ['required', 'null string not allowed', 'img_path provided but file is
 
 # POST /events endpoint
 def postOrders(request):
+    if request.session['cart'] == []:
+        response = {'error': {'message': 'Cart is empty'}}
+        http_status = 400
+        return response, http_status
     new_item = parse_request(request)
 
     errors, response, books = check_post_body(request, new_item)
@@ -143,3 +147,38 @@ def processRequest(request):
         response = {'error': {'message': 'Bad request'}}
         http_status = 400
     return JsonResponse(response, status=http_status, safe=False)
+
+@api_view(['GET'])
+def getID(request, id):
+    if 'user' not in request.session:
+        response = {'error': {'message': 'Unauthorized'}}
+        http_status = 401
+        return JsonResponse(response, status=http_status, safe=False)
+
+    if request.method == 'GET':
+        response, http_status = handleID(request, id)
+    else:
+        response = {'error': {'message': 'Bad request'}}
+        http_status = 400
+    return JsonResponse(response, status=http_status, safe=False)
+
+orderIDColumns = ['id', 'total_sum', 'payment_type', 'shipping_type', 'status', 'created_at', 'user__id', 'user__email', 'books__title', 'books__price']
+
+# GET /orders/{id} endpoint
+def handleID(request, id):
+
+    order = Orders.objects.values(*orderIDColumns).filter(pk=id).first()
+
+    if order is None:
+        return {'error': {'message': 'Zaznam neexistuje'}}, 404
+
+    if order['user__id'] != request.session['user']['id']:
+        response = {'errors': {'message': 'Forbidden'}}
+        http_status = 403
+        return response, http_status
+
+    response = serialize_object('order', order)
+    return response, 200
+
+def serialize_object(str, get):
+    return {str: get}
