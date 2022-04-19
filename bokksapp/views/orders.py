@@ -107,7 +107,7 @@ def check_post_body(request, new_item, file):
 
     if new_item['status'] is not None:
         if new_item['status'] == '':
-            errors.append({'field': 'status', 'reasons': [reasons[0], reasons[1]]})
+            errors.append({'field': 'status', 'reasons': [reasons[1]]})
 
     new_item['user'] = Users.objects.filter(id=request.session['user']['id']).first()
 
