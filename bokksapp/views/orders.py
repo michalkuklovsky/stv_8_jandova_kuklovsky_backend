@@ -66,11 +66,13 @@ reasons = ['required', 'null string not allowed', 'img_path provided but file is
 def postOrders(request):
     new_item = parse_request(request)
 
-    errors, response = check_post_body(request, new_item)
+    errors, response, books = check_post_body(request, new_item)
     if errors:
         return {'errors': errors}, 422
 
     newOrder = Orders.objects.create(**new_item)
+
+    newOrder.books.set(books)
 
     response_dict = Orders.objects.filter(id=newOrder.id).values(*ordersPostColumns).first()
 
@@ -79,13 +81,13 @@ def postOrders(request):
 def parse_request(request):
     r = request.POST
     return {
-        'payment_type': r.get('description'),
-        'shipping_type': r.get('img_path'),
-        'status': r.get('name'),
+        'payment_type': r.get('payment_type'),
+        'shipping_type': r.get('shipping_type'),
+        'status': r.get('status'),
     }
 
     # checks parameters in POST requst body and handles errors
-def check_post_body(request, new_item, file):
+def check_post_body(request, new_item):
     errors = []
     response = {}
 
@@ -112,15 +114,19 @@ def check_post_body(request, new_item, file):
     new_item['user'] = Users.objects.filter(id=request.session['user']['id']).first()
 
     bookIDs = []
+    totalSum = 0
     for i in request.session['cart']:
-        thisID = Users.objects.values('id').filter(title=i['title']).first()
-        bookIDs.append(thisID)
+        thisID = Books.objects.values('id').filter(title=i['title']).first()
+        bookIDs.append(thisID['id'])
+        totalSum += i['quantity'] * i['price']
 
-    new_item['books'] = Users.objects.filter(pk__in=bookIDs).all()
+    new_item['total_sum'] = totalSum
+    books = Books.objects.filter(pk__in=bookIDs).all()
+    # new_item['books'] = list(books)
 
     response = dict(new_item)
 
-    return errors, response
+    return errors, response, books
 
 @api_view(['GET', 'POST'])
 def processRequest(request):
