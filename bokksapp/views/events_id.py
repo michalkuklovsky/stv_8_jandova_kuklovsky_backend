@@ -1,6 +1,4 @@
-import json
-
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.utils import timezone
 from rest_framework.decorators import api_view
 from datetime import datetime
@@ -160,4 +158,19 @@ def processRequest(request, id):
     else:
         response = {'errors': {'message': 'Bad request'}}
         http_status = 400
-    return JsonResponse(response, status=http_status)    
+    return JsonResponse(response, status=http_status)
+
+@api_view(['GET'])
+def get_image(request, id, img_path):
+    try:
+        Events.objects.get(pk=id)
+    except Events.DoesNotExist:
+        return {'error': {'message': 'Zaznam neexistuje'}}, 404
+
+    book = Events.objects.filter(id=id, img_path__iexact=img_path).first()
+    if book.img_path:
+        file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
+    else:
+        file = 'None'
+
+    return FileResponse(file)

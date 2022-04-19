@@ -38,7 +38,7 @@ urlpatterns = [
     path('orders/', orders.processRequest),
     path('orders/<int:id>', orders.getID),
     # AUTH
-    path('profile/<int:id>', auth.profile),
+    path('profile', auth.profile),
     path('login', auth.login),
     path('logout', auth.logout)
 ]

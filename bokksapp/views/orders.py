@@ -164,6 +164,7 @@ def getID(request, id):
 
 orderIDColumns = ['id', 'total_sum', 'payment_type', 'shipping_type', 'status', 'created_at', 'user__id', 'user__email', 'books__title', 'books__price']
 
+
 # GET /orders/{id} endpoint
 def handleID(request, id):
 
@@ -177,8 +178,9 @@ def handleID(request, id):
         http_status = 403
         return response, http_status
 
-    response = serialize_obj('order', order)
+    response = serialize_object('order', order)
     return response, 200
 
-def serialize_obj(str, get):
+
+def serialize_object(str, get):
     return {str: get}
