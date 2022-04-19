@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 import base64
 from rest_framework.decorators import api_view
 from bokksapp.models import Books
@@ -111,10 +111,5 @@ def get_image(request, id, img_path):
         file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
     else:
         file = 'None'
-    # print(type(file))
-    image = base64.b64encode(file.read())
-    response = {"image": str(image)}
-    # response = b'data:image/png;base64,'+image
-    return JsonResponse(response, status=200, safe=False)
 
-
+    return FileResponse(file)
