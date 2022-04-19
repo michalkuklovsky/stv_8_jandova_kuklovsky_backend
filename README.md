@@ -8,8 +8,11 @@
 - pridane /events /events/{id} a /search
 
 ## TODO
-- upload suboru
-- yaml
-  - aktualizovat podla reality
-- naplnit db datami
-- Figma (optional xD)
+- pridany endpoint na get obrazka
+- do /books pridane do response 'quantity'
+- pridany endpoint GET /cart
+- pridany endpoint POST /cart
+- pridany endpoint DELETE /cart
+- pridany endpoint GET /orders
+- pridany endpoint POST /orders
+- pridany endpoint GET /orders/{id}
