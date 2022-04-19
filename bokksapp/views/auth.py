@@ -14,6 +14,7 @@ def login(request):
         return JsonResponse({"error": {"message": "Invalid username or password"}}, status=401, safe=False)
 
     request.session['user'] = {"id": user.id, "email": user.email, "is_admin": user.is_admin}
+    request.session['cart'] = []
 
     return HttpResponse(status=204)
 
@@ -22,6 +23,7 @@ def login(request):
 def logout(request):
     try:
         del request.session['user']
+        del request.session['cart']
         return HttpResponse(status=204)
     except:
         response = {'error': {'message': 'Logout not successful'}}
