@@ -167,9 +167,9 @@ def get_image(request, id, img_path):
     except Events.DoesNotExist:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
 
-    book = Events.objects.filter(id=id, img_path__iexact=img_path).first()
-    if book.img_path:
-        file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
+    event = Events.objects.filter(id=id, img_path__exact=img_path).first()
+    if event.img_path:
+        file = open(f'./bokksapp/resources/events/{event.img_path}', 'rb')
     else:
         file = 'None'
 
