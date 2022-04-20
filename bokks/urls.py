@@ -25,6 +25,8 @@ urlpatterns = [
     # EVENTS
     path('events/', events.processRequest, name='events'),
     path('events/<int:id>', events_id.processRequest),
+    path('events/<int:id>/<str:img_path>', events_id.get_image),
+
     # GENRES
     path('genres/', genres.process_request),
     # BOOKS
