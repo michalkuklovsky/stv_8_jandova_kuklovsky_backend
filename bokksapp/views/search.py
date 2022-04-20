@@ -63,7 +63,7 @@ def check_and_set_parameters(query_parameters):
     if not query_parameters['order_type'] or str(query_parameters['order_type']).lower() != 'desc':
         query_parameters['order_type'] = ORDER_TYPE
 
-    if not query_parameters['filter_by'] or str(query_parameters['filter_by']).lower() not in ['author', 'genres']:
+    if not query_parameters['filter_by'] or str(query_parameters['filter_by']).lower() not in ['author', 'genre']:
         query_parameters['filter_by'] = None
 
     return query_parameters

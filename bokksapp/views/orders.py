@@ -80,6 +80,8 @@ def postOrders(request):
 
     response_dict = Orders.objects.filter(id=newOrder.id).values(*ordersPostColumns).first()
 
+    request.session['cart'] = []
+
     return {'order': response_dict}, 201
 
 def parse_request(request):
