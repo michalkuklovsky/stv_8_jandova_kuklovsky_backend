@@ -38,6 +38,7 @@ def put_book(request, id):
         file = None
 
     errors, book_data = check_req(put_data, file)
+    print(errors)
     if errors:
         return errors, 422
 
@@ -106,10 +107,10 @@ def get_image(request, id, img_path):
     except Books.DoesNotExist:
         return {'error': {'message': 'Zaznam neexistuje'}}, 404
 
-    book = Books.objects.filter(id=id, img_path__iexact=img_path).first()
-    if book.img_path:
-        file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
-    else:
-        file = 'None'
+    file = 'None'
+    if img_path:
+        book = Books.objects.filter(id=id).first()
+        if book.img_path == img_path:
+            file = open(f'./bokksapp/resources/books/{book.img_path}', 'rb')
 
     return FileResponse(file)
