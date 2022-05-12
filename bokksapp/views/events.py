@@ -10,7 +10,7 @@ from django.db.models import F
 from bokksapp.models import Events
 from bokksapp.models import Users
 
-eventsGetColumns = ['id', 'name', 'description', 'img_path', 'user__id', 'user__email']
+eventsGetColumns = ['id', 'name', 'description', 'deleted_at', 'img_path', 'user__id', 'user__email']
 eventsPostColumns = ['name', 'description', 'img_path', 'user__id']
 eventsAdminColumns = ['id', 'name', 'description', 'img_path', 'created_at', 'updated_at', 'deleted_at', 'user__id', 'user__email']
 
